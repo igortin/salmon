@@ -12,18 +12,18 @@ const (
 	amqpRabbit
 )
 
-// Interface for Server Config
 type IoConfig interface {
 }
 
-// Config - Composition struct for Server configuration
+
+// Config is composition of structs represents Proxy servers configuration.
 type Config struct {
 	Port            string        `json:"interface"`
 	Upstreams       []Upstream    `json:"upstreams"`
 	GraceTimoutStop time.Duration `json:"grace_timout_stop"`
 }
 
-// Struct for Server Upstream
+// Upstream is set of properties for http Handler from configuration.
 type Upstream struct {
 	Path        string    `json:"path"`
 	Method      string    `json:"method"`
@@ -31,18 +31,22 @@ type Upstream struct {
 	ProxyMethod PrxMethod `json:"proxy_method"`
 }
 
-// Struct include slice of servers configurations
+// ProxyConfigs is array of servers configurations.
 type ProxyConfigs struct {
 	Configs []Config `json:"configs"`
 }
 
 
+// Custom struct to enumerate ProxyMethods
 type PrxMethod int
+
+
+// String convert pointer to enum to string.
 func (p *PrxMethod) String() string {
 	return []string{"unknown", "round-robin", "anycast", "amqpRabbit"}[*p]
 }
 
-// UnmarshalJSON(b []byte) used by default for one field type PrxMethod when convert from JSON config file to struct Upstream
+// UnmarshalJSON used by default for one field type PrxMethod when convert from JSON config file to struct.
 func (p *PrxMethod) UnmarshalJSON(b []byte) error {
 	switch strings.Trim(string(b), "\"") { // trim '\"' string
 	case "round-robin":
@@ -57,7 +61,10 @@ func (p *PrxMethod) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// MarshalJSON used by default for one field type PrxMethod when convert from struct to Json doc
+
+
+
+// MarshalJSON used by default for one field type PrxMethod when convert from struct to string.
 func (p *PrxMethod) MarshalJSON() (string, error) {
 	switch *p {
 	case roundrobin:

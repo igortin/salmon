@@ -5,28 +5,31 @@ import (
 	"sync"
 )
 
-type proxyLogger struct {
-	proxyServer IoProxy
-	log         *logrus.Logger
+
+// ProxyLogger is decorator for IoProxy interface with log support.
+type ProxyLogger struct {
+	ProxyServer IoProxy
+	Log         *logrus.Logger
 }
-// Method that decorate logging servers
-func (cmd *proxyLogger) Run(wg *sync.WaitGroup) error {
-	cmd.log.Debug("Run server")
-	err := cmd.proxyServer.Run(wg)
+
+// Run proxy server with log.
+func (cmd *ProxyLogger) Run(wg *sync.WaitGroup) error {
+	cmd.Log.Debug("Run server")
+	err := cmd.ProxyServer.Run(wg)
 	if err != nil {
-		cmd.log.Warn(err.Error())
+		cmd.Log.Warn(err.Error())
 		return err
 	}
 	return nil
 }
-// Method Not Used
-func (cmd *proxyLogger) Shutdown() error {
+// Shutdown is not implemented.
+func (cmd *ProxyLogger) Shutdown() error {
 	return nil
 }
-// Func to return instance proxyLogger
+
+// NewProxyLogger return proxyLogger object.
 func NewProxyLogger(proxyServer IoProxy, log *logrus.Logger) IoProxy {
-	return &proxyLogger{
+	return &ProxyLogger{
 		proxyServer,
 		log,
-	}
-}
+	}}

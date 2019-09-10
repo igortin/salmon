@@ -30,8 +30,8 @@ type IoProxy interface {
 	Run(wg *sync.WaitGroup) error
 	Shutdown() error
 }
-
-type proxy struct {
+// Proxy is main server struct.
+type Proxy struct {
 	Service         *http.Server
 	Stopped         bool
 	Router          *mux.Router
@@ -40,12 +40,16 @@ type proxy struct {
 	Logger          *logrus.Logger
 }
 
+
+// RequestAmqpMessage is decoded from http request.
 type RequestAmqpMessage struct {
 	Id      string `json:"id,omitempty"`
 	Message string `json:"message"`
 }
 
-func (cmd *proxy) Run(wg *sync.WaitGroup) error {
+
+// Run return listening HTTP server.
+func (cmd *Proxy) Run(wg *sync.WaitGroup) error {
 	cmd.Logger.Debug("Server started on port: ", cmd.Cfg.Port)
 	// Goroutine control and server stop
 	go func() {
@@ -68,11 +72,11 @@ func (cmd *proxy) Run(wg *sync.WaitGroup) error {
 	return cmd.Service.ListenAndServe()
 }
 
-// Func return instance for IoProxy
+// NewProxy return Proxy object.
 func NewProxy(srv *http.Server, config Config, graceToStop time.Duration, Logger *logrus.Logger) IoProxy {
 	router := mux.NewRouter()
 	srv.Handler = router
-	return &proxy{
+	return &Proxy{
 		srv,
 		true,
 		router,
@@ -82,7 +86,7 @@ func NewProxy(srv *http.Server, config Config, graceToStop time.Duration, Logger
 	}
 }
 
-func (cmd *proxy) makeHandlers(index int) http.HandlerFunc {
+func (cmd *Proxy) makeHandlers(index int) http.HandlerFunc {
 	var body []byte
 	var err error
 	var reqId string
@@ -191,14 +195,13 @@ func (cmd *proxy) makeHandlers(index int) http.HandlerFunc {
 	}
 	return nil
 }
-// Method to stop servers by Ctrl+C command
-func (cmd *proxy) Shutdown() error {
+// Method to stop servers by Ctrl+C command in background mode.
+func (cmd *Proxy) Shutdown() error {
 	for _,con := range p.pool {
 		con.Close()
 	}
 	cmd.Stopped = true
 	ctx, cancel := context.WithTimeout(context.Background(), cmd.GracefulTimeout)
-
 	defer cancel()
 
 	time.Sleep(cmd.GracefulTimeout)

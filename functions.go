@@ -12,7 +12,7 @@ var (
 	count = &Count{}
 )
 
-// Func to process Round-Robin request
+// GetResponseRoundRobin return response with Round-Robin police.
 func GetResponseRoundRobin(index int, config Config, reqId string, logger *logrus.Logger) ([]byte, string ,error) {
 	var body []byte
 	var resp *http.Response
@@ -44,7 +44,7 @@ func GetResponseRoundRobin(index int, config Config, reqId string, logger *logru
 	return body,config.Upstreams[index].Back[upstream], nil
 }
 
-// func to process Anycast
+// GetResponseAnycast return response with Anycast police.
 func GetResponseAnycast(index int, config Config, reqId string, logger *logrus.Logger) ([]byte, string, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

@@ -1,7 +1,6 @@
 package salmon
 
 import (
-	"github.com/pkg/errors"
 	rabbit "github.com/rabbitmq-client"
 	"github.com/streadway/amqp"
 	"os"
@@ -22,16 +21,13 @@ var (
 	poolSz = 5
 )
 
-var  (
-	NoSlotPool = errors.New("unable put connection, no slot")
-	NoConPool = errors.New("unable get connection from pool")
-)
-
+// ConPool represents a pool of connections. Connections objects stored in a field pool. Max capacity is maxSize.
 type ConPool struct {
 	pool []*amqp.Connection
 	maxSize int
 }
 
+// GetCon return pointer to amqp connection.
 func (p *ConPool) GetCon() (*amqp.Connection, error) {
 	if len(p.pool) == 0 {
 		return nil, NoConPool
@@ -41,6 +37,7 @@ func (p *ConPool) GetCon() (*amqp.Connection, error) {
 	return connection, nil
 }
 
+// PutCon append amqp connection pointer to object of struct ConPool.
 func (p *ConPool) PutCon(connection *amqp.Connection) error {
 	length := len(p.pool)
 	if length + 1 > p.maxSize {
@@ -50,6 +47,7 @@ func (p *ConPool) PutCon(connection *amqp.Connection) error {
 	return nil
 }
 
+// GetRespRabbitMQ return response from RPC server.
 func GetRespRabbitMQ(message []byte, p *ConPool) (resp []byte, errs error) {
 	var wg sync.WaitGroup
 	con, err := p.GetCon()
@@ -173,7 +171,7 @@ func GetRespRabbitMQ(message []byte, p *ConPool) (resp []byte, errs error) {
 
 	return resp, nil
 }
-// Func to retrun Length Pool
+// GetMaxPoolSz to return connection pool length.
 func GetMaxPoolSz() int {
 	if os.Getenv("RabbitPoolSize") != "" {
 		count, err := strconv.Atoi(os.Getenv("RabbitPoolSize"))

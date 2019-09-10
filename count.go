@@ -1,15 +1,15 @@
 package salmon
-// Struct for Round-Robin counter
+// Count represents counter for RoundRobin requests between upstreams.
 type Count struct {
 	scorer int
 }
 
-// Func to reset count number
+// ResetCount clear current counter.
 func (c *Count) ResetCount() {
 	c.scorer = 0
 }
 
-// Func to increase count number
+// IncreaseCount append int 1 to counter.
 func (c *Count) IncreaseCount(){
 	c.scorer++
 }
